@@ -1,4 +1,4 @@
-const puppeteer = require("puppeteer");
+const { timeout } = require("puppeteer");
 let page;
 
 beforeEach(async () => {
@@ -10,57 +10,59 @@ afterEach(() => {
 });
 
 describe("Github page tests", () => {
-
   beforeEach(async () => {
-    page = await browser.newPage();
     await page.goto("https://github.com/team");
-  }, 5000);
-  
+  }, 60000);
+
   test("The h1 header content'", async () => {
     const firstLink = await page.$("header div div a");
     await firstLink.click();
-    await page.waitForSelector('h1');
+    await page.waitForSelector("h1", { timeout: 5000 });
     const title2 = await page.title();
-    expect(title2).toEqual('GitHub: Where the world builds software · GitHub');
+    expect(title2).toEqual(
+      "GitHub · Change is constant. GitHub keeps you ahead. · GitHub"
+    );
   });
 
   test("The first link attribute", async () => {
-    const actual = await page.$eval("a", link => link.getAttribute('href') );
+    const actual = await page.$eval("a", (link) => link.getAttribute("href"));
     expect(actual).toEqual("#start-of-content");
-  });
+  }, 4000);
 
   test("The page contains Sign in button", async () => {
     const btnSelector = ".btn-large-mktg.btn-mktg";
     await page.waitForSelector(btnSelector, {
       visible: true,
     });
-    const actual = await page.$eval(btnSelector, link => link.textContent);
-    expect(actual).toContain("Sign up for free")
-  });
+    await page.setDefaultTimeout(5000);
+    const actual = await page.$eval(btnSelector, (link) => link.textContent);
+    expect(actual).toContain("Get started with Team");
+  },);
 });
 
 describe("Second task three tests", () => {
-  afterEach(() => {
-    page.close();
-  });
+  beforeEach(async () => {
+    await page.goto("https://github.com/team");
+  }, 60000);
 
-  test("Check title Healthcare", async () => {
-    await page.goto("https://github.com/solutions/industry/healthcare");
-    const actual = await page.$eval("main a", (link) =>
-      link.getAttribute("href")
-    );
-    expect(actual).toEqual("#hero-section-brand-heading");
-  }, 4000);
+  test("Check title Blog", async () => {
+      await page.goto("https://github.blog/");
+      const title = await page.title();
+    expect(title).toContain("Home - The GitHub Blog");
+  }, 
+  10000);
 
   test("Check title Trending", async () => {
     await page.goto("https://github.com/trending");
     const title = await page.title();
-    expect(title).toContain("Trending · GitHub");
-  }, 2000);
+    expect(title).toContain("Trending repositories on GitHub today · GitHub");
+  }, 10000);
 
   test("Check title AI", async () => {
     await page.goto("https://github.com/resources/articles?topic=ai");
     const title = await page.title();
-    expect(title).toContain("GitHub Articles · GitHub");
-  }, 4000);
-});
+    expect(title).toContain(
+      "GitHub Articles • Technical Guides, Developer Insights & Best Practices · GitHub"
+    );
+  }, 10000);
+})
